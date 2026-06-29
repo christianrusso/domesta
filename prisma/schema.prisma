@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  password      String
+  name          String
+  phone         String?
+  photoUrl      String?
+  address       String?
+  zone          String?    @db.VarChar(100)
+  isApproved    Boolean    @default(false)
+  isSuspended   Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  role          Role       @default(CLIENT)
+
+  conversations Conversation[] @relation("ClientConversations")
+  messages      Message[]      @relation("SenderMessages")
+  credits       CreditPackage[]
+  reviews       Review[]       @relation("ReviewAuthor")
+  domesticProfile DomesticProfile?
+
+  @@index([email])
+  @@index([zone])
+  @@index([role])
+  @@index([isApproved])
+}
+
+enum Role {
+  CLIENT
+  DOMESTIC
+  ADMIN
+}
+
+model DomesticProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description       String?  @db.Text
+  personalTraits    String[] @default([])
+  languages         String[] @default([])
+  hasLicense        Boolean  @default(false)
+  ownCar            Boolean  @default(false)
+  doesSmoke         Boolean  @default(false)
+  petFriendly       Boolean  @default(false)
+  vaccinated        Boolean  @default(false)
+  cprCertified      Boolean  @default(false)
+  hourlyRate        Int
+  isNegotiable      Boolean  @default(true)
+  isApproved        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  nannyDescription  String?  @db.Text
+  nannyAgesHandled  String[] @default([])
+  nannyMaxChildren  Int?
+  nannyExperience   String?  @db.Text
+  experience        String?
+  availabilityTypes String[] @default([])
+  cleaningType      String?
+  cleaningDetails   String?
+  cookingType       String?
+  cookingDetails    String?
+
+  skills            Skill[]
+  availability      Availability[]
+  conversations     Conversation[] @relation("DomesticConversations")
+
+  @@index([userId])
+  @@index([isApproved])
+}
+
+model Skill {
+  id                String   @id @default(cuid())
+  domesticProfileId String
+  domesticProfile   DomesticProfile @relation(fields: [domesticProfileId], references: [id], onDelete: Cascade)
+  skillType         SkillType
+
+  @@index([domesticProfileId])
+  @@unique([domesticProfileId, skillType])
+}
+
+enum SkillType {
+  CLEANING
+  NANNY
+  COOKING
+}
+
+model Availability {
+  id                String   @id @default(cuid())
+  domesticProfileId String
+  domesticProfile   DomesticProfile @relation(fields: [domesticProfileId], references: [id], onDelete: Cascade)
+  dayOfWeek         String
+  startTime         String
+  endTime           String
+
+  @@index([domesticProfileId])
+}
+
+model Conversation {
+  id              String   @id @default(cuid())
+  clientId        String
+  client          User     @relation("ClientConversations", fields: [clientId], references: [id], onDelete: Cascade)
+  domesticId      String
+  domestic        DomesticProfile @relation("DomesticConversations", fields: [domesticId], references: [id], onDelete: Cascade)
+  messages        Message[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([domesticId])
+  @@unique([clientId, domesticId])
+}
+
+model Message {
+  id              String   @id @default(cuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId        String
+  sender          User     @relation("SenderMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  content         String   @db.Text
+  isModeratorAlert Boolean @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+model CreditPackage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credits   Int
+  price     Float
+  currency  String   @default("ARS")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Contact {
+  id              String   @id @default(cuid())
+  clientId        String
+  domesticId      String
+  conversationId  String?
+  email           String?
+  phone           String?
+  createdAt       DateTime @default(now())
+
+  @@index([clientId])
+  @@index([domesticId])
+  @@unique([clientId, domesticId])
+}
+
+model Review {
+  id              String   @id @default(cuid())
+  authorId        String
+  author          User     @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  rating          Int
+  comment         String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  @@index([authorId])
+}

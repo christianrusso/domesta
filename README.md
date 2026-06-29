@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Domesta - Marketplace de Personal Doméstico
 
-## Getting Started
+Una plataforma moderna que conecta a personal doméstico con familias que necesitan contratar servicios en Argentina.
 
-First, run the development server:
+## 🚀 Características principales del MVP
+
+### Para Clientes (Familias)
+- ✅ Registro e inicio de sesión
+- ✅ Búsqueda de personal con filtros básicos
+- ✅ Ver perfiles completos de personal doméstico
+- ✅ Mensajería gratuita (3 primeros mensajes)
+- ✅ Moderación anti-evasión de pago (detecta datos de contacto)
+- ⏳ Próximamente: Búsqueda con IA en lenguaje natural
+- ⏳ Próximamente: Sistema de créditos y pagos
+
+### Para Personal Doméstico
+- ✅ Registro completo con perfil
+- ✅ Múltiples skills combinables (limpieza, niñera, cocina)
+- ✅ Disponibilidad y tarifa por hora
+- ✅ Características personales e idiomas
+- ✅ Recibir mensajes de clientes
+
+## 🛠️ Stack Tecnológico
+
+- **Frontend**: Next.js 16 + React + Tailwind CSS
+- **Backend**: Next.js API Routes + Node.js
+- **Base de datos**: SQLite (desarrollo)
+- **Autenticación**: JWT + bcrypt
+- **ORM**: Prisma
+- **Idioma**: TypeScript
+
+## 📦 Cómo empezar
 
 ```bash
+cd domesta-app
+npm install
+npx prisma migrate dev
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Próximos pasos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Prueba el flujo de registro** como cliente y personal doméstico
+2. **Completa tu perfil** si registras como personal
+3. **Busca y contacta** otros perfiles
+4. **Envía mensajes** (los primeros 3 son gratis)
 
-## Learn More
+## 📝 Características por Fase
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **MVP Fase 1** (Actual): Registro, búsqueda básica, mensajería
+- **MVP Fase 2**: Búsqueda con IA, sistema de créditos, pagos
+- **MVP Fase 3**: Panel admin, referencias, verificación de identidad
