@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+
+const getGravatarUrl = (email: string) => {
+  const hash = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
+  return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
+};
 
 const firstNames = ['María', 'Ana', 'Carmen', 'Rosa', 'Francisca', 'Isabel', 'Juana', 'Dolores', 'Pilar', 'Gloria',
   'Elena', 'Teresa', 'Marta', 'Patricia', 'Beatriz', 'Magdalena', 'Antonia', 'Encarnación', 'Esperanza', 'Soledad',
@@ -60,6 +66,7 @@ export async function POST(request: NextRequest) {
           password,
           address: `Calle ${Math.floor(Math.random() * 9000)} ${Math.floor(Math.random() * 999)}`,
           zone,
+          photoUrl: getGravatarUrl(email),
           role: 'DOMESTIC',
           isApproved: true,
         },

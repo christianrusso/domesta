@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+
+const getGravatarUrl = (email: string) => {
+  const hash = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
+  return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +24,7 @@ export async function POST(request: NextRequest) {
       const password = await bcrypt.hash('password123', 10);
       const zone = 'Recoleta, CABA';
       await prisma.user.create({
-        data: { name, email, password, address: `Calle ${i}`, zone, role: 'CLIENT', isApproved: true },
+        data: { name, email, password, address: `Calle ${i}`, zone, photoUrl: getGravatarUrl(email), role: 'CLIENT', isApproved: true },
       });
     }
 
@@ -34,7 +40,7 @@ export async function POST(request: NextRequest) {
       const password = await bcrypt.hash('password123', 10);
       const zone = 'Recoleta, CABA';
       const user = await prisma.user.create({
-        data: { name, email, password, address: `Calle ${i}`, zone, role: 'DOMESTIC', isApproved: true },
+        data: { name, email, password, address: `Calle ${i}`, zone, photoUrl: getGravatarUrl(email), role: 'DOMESTIC', isApproved: true },
       });
       const profile = await prisma.domesticProfile.create({
         data: {

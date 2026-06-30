@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+
+const getGravatarUrl = (email: string) => {
+  const hash = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
+  return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
+};
 
 const seedData = [
   {
@@ -150,6 +156,7 @@ export async function GET(request: NextRequest) {
           password: hashedPassword,
           name: employee.name,
           zone: employee.zone,
+          photoUrl: getGravatarUrl(employee.email),
           role: 'DOMESTIC',
           isApproved: true, // Auto-approve para testing
         },
