@@ -250,9 +250,9 @@ export default function RegisterWizard() {
       case 'services':
         return form.role === 'client' || form.services.length > 0;
       case 'experience':
-        return form.role === 'client' || form.experience;
+        return !!(form.role === 'client' || form.experience);
       case 'tariff':
-        return form.role === 'client' || form.hourlyRate;
+        return !!(form.role === 'client' || form.hourlyRate);
       case 'availability':
         return form.role === 'client' || form.availabilityTypes.length > 0;
       case 'days':
