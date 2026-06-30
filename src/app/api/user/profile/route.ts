@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
             id: true,
             description: true,
             hourlyRate: true,
+            isApproved: true,
             skills: true,
           },
         },
