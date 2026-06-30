@@ -244,7 +244,7 @@ export default function RegisterWizard() {
       case 'basics':
         return true;
       case 'location':
-        return form.province && form.locality && form.address;
+        return !!(form.province && form.locality && form.address);
       case 'age':
         return true;
       case 'services':
