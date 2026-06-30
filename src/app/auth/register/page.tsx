@@ -248,15 +248,15 @@ export default function RegisterWizard() {
       case 'age':
         return true;
       case 'services':
-        return form.role === 'client' || form.services.length > 0;
+        return !!(form.role === 'client' || form.services.length > 0);
       case 'experience':
         return !!(form.role === 'client' || form.experience);
       case 'tariff':
         return !!(form.role === 'client' || form.hourlyRate);
       case 'availability':
-        return form.role === 'client' || form.availabilityTypes.length > 0;
+        return !!(form.role === 'client' || form.availabilityTypes.length > 0);
       case 'days':
-        return form.role === 'client' || Object.values(form.availability).some((hours) => hours.length > 0);
+        return !!(form.role === 'client' || Object.values(form.availability).some((hours) => hours.length > 0));
       case 'languages':
       case 'traits':
       case 'presentation':
