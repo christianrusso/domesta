@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogoWithText } from '@/components/Logo';
+import { Header } from '@/components/Header';
 import { argentinianProvinces } from '@/lib/argentina-zones';
 import { formatZone } from '@/lib/utils';
 import { Avatar } from '@/components/Avatar';
@@ -18,6 +17,7 @@ interface DomesticProfile {
   hourlyRate: number | null;
   skills: Array<{ skillType: string }>;
   description: string | null;
+  availability?: Array<{ dayOfWeek: string; startTime: string; endTime: string }>;
 }
 
 export default function SearchPage() {
@@ -44,6 +44,8 @@ export default function SearchPage() {
   const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc'>('name');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  const [showAILegend, setShowAILegend] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
   const skillOptions = [
     { value: 'NANNY', label: 'Niñera' },
@@ -58,6 +60,40 @@ export default function SearchPage() {
       return;
     }
     fetchData(token);
+
+    // Detectar si vienen filtros de IA
+    const params = new URLSearchParams(window.location.search);
+    const isAIPowered = params.get('aiPowered') === 'true';
+    const aiFiltersStr = sessionStorage.getItem('aiFilters');
+
+    if (isAIPowered && aiFiltersStr) {
+      try {
+        const aiFilters = JSON.parse(aiFiltersStr);
+        setShowAILegend(true);
+
+        // Aplicar filtros de IA
+        if (aiFilters.skills && aiFilters.skills.length > 0) {
+          setSelectedSkills(aiFilters.skills);
+        }
+        if (aiFilters.maxPrice) {
+          setMaxRate(aiFilters.maxPrice.toString());
+        }
+        if (aiFilters.minPrice) {
+          setMinRate(aiFilters.minPrice.toString());
+        }
+        if (aiFilters.province) {
+          setSelectedProvince(aiFilters.province);
+        }
+
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('aiFilters');
+
+        // Limpiar URL
+        window.history.replaceState({}, document.title, '/search');
+      } catch (error) {
+        console.error('Error parsing AI filters:', error);
+      }
+    }
   }, [router]);
 
   const fetchData = async (token: string) => {
@@ -74,13 +110,23 @@ export default function SearchPage() {
       const profilesData = await profilesRes.json();
       const profiles = profilesData.profiles || [];
       setAllProfiles(profiles);
-      setFilteredProfiles(profiles);
+      // No establecer filteredProfiles aquí - dejar que el useEffect lo haga basado en los filtros
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Aplicar filtros automáticamente cuando cambien
+  useEffect(() => {
+    if (allProfiles.length > 0) {
+      applyFilters();
+    } else if (allProfiles.length === 0 && selectedSkills.length === 0 && !selectedProvince) {
+      // Si no hay perfiles cargados y no hay filtros, mostrar lista vacía
+      setFilteredProfiles([]);
+    }
+  }, [allProfiles, selectedSkills, selectedProvince, minRate, maxRate, searchText, sortBy, hasLicense, petFriendly, ownCar, doesSmoke, vaccinated, cprCertified, isNegotiable, selectedDays]);
 
   const applyFilters = () => {
     let filtered = allProfiles;
@@ -144,6 +190,15 @@ export default function SearchPage() {
       filtered = filtered.filter((p) => p.isNegotiable);
     }
 
+    if (selectedDays.length > 0) {
+      filtered = filtered.filter((p) => {
+        if (!p.availability || p.availability.length === 0) return false;
+        return selectedDays.some((day) =>
+          p.availability!.some((avail) => avail.dayOfWeek === day)
+        );
+      });
+    }
+
     // Ordenamiento
     if (sortBy === 'price-asc') {
       filtered.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
@@ -170,6 +225,7 @@ export default function SearchPage() {
     setVaccinated(false);
     setCprCertified(false);
     setIsNegotiable(false);
+    setSelectedDays([]);
     setSortBy('name');
     setCurrentPage(1);
     setFilteredProfiles(allProfiles);
@@ -192,19 +248,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br slate-950">
-      {/* Header */}
-      <nav className="bg-white/5 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link href="/dashboard">
-            <LogoWithText />
-          </Link>
-          <div className="flex gap-6">
-            <Link href="/inbox" className="text-white/70 hover:text-white transition">Mensajes</Link>
-            <Link href="/profile" className="text-white/70 hover:text-white transition">Mi Perfil</Link>
-            <span className="text-sm text-white/70">{user?.name}</span>
-          </div>
-        </div>
-      </nav>
+      <Header user={user} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -374,6 +418,38 @@ export default function SearchPage() {
                 </div>
               </div>
 
+              {/* Días de Disponibilidad */}
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-white font-semibold mb-2 text-sm">Días disponibles</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: 'Mon', label: 'Lunes' },
+                    { value: 'Tue', label: 'Martes' },
+                    { value: 'Wed', label: 'Miércoles' },
+                    { value: 'Thu', label: 'Jueves' },
+                    { value: 'Fri', label: 'Viernes' },
+                    { value: 'Sat', label: 'Sábado' },
+                    { value: 'Sun', label: 'Domingo' },
+                  ].map((day) => (
+                    <label key={day.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedDays.includes(day.value)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedDays([...selectedDays, day.value]);
+                          } else {
+                            setSelectedDays(selectedDays.filter((d) => d !== day.value));
+                          }
+                        }}
+                        className="w-4 h-4 rounded accent-purple-600"
+                      />
+                      <span className="text-white text-xs sm:text-sm">{day.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* Ordenamiento */}
               <div className="mb-4 sm:mb-6">
                 <label className="block text-white font-semibold mb-2 text-sm">Ordenar por</label>
@@ -410,6 +486,13 @@ export default function SearchPage() {
 
           {/* Lista de Niñeras */}
           <div className="md:col-span-2 lg:col-span-3">
+            {showAILegend && (
+              <div className="mb-4 p-4 bg-blue-900/20 border border-blue-500/50 rounded-lg">
+                <p className="text-blue-300 text-sm flex items-center gap-2">
+                  ✨ <span>Resultados generados por IA basados en tu búsqueda</span>
+                </p>
+              </div>
+            )}
             <div className="space-y-4">
               {filteredProfiles.length === 0 ? (
                 <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-12 text-center">

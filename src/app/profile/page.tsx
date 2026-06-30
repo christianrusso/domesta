@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LogoWithText } from '@/components/Logo';
+import { Header } from '@/components/Header';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 import { formatZone } from '@/lib/utils';
 import { Avatar } from '@/components/Avatar';
@@ -33,7 +33,6 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -71,15 +70,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogoutClick = () => {
-    setShowLogoutConfirm(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setShowLogoutConfirm(false);
-    router.push('/');
-  };
 
   if (loading) {
     return (
@@ -116,28 +106,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br slate-950">
-      {/* Header */}
-      <nav className="bg-white/5 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <LogoWithText />
-          <div className="flex gap-6">
-            <Link href="/inbox" className="text-white/70 hover:text-white transition font-medium">
-              Mensajes
-            </Link>
-            {!isDomestic && (
-              <Link href="/dashboard" className="text-white/70 hover:text-white transition font-medium">
-                Dashboard
-              </Link>
-            )}
-            <button
-              onClick={handleLogoutClick}
-              className="text-red-400 hover:text-red-300 transition font-medium"
-            >
-              Salir
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Header user={user} />
 
       <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
@@ -265,29 +234,6 @@ export default function ProfilePage() {
         isOpen={showChangePasswordModal}
         onClose={() => setShowChangePasswordModal(false)}
       />
-
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br slate-950 border border-white/20 rounded-lg p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-bold text-white mb-2">¿Cerrar sesión?</h3>
-            <p className="text-white/70 mb-6">¿Estás seguro de que quieres salir?</p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowLogoutConfirm(false)}
-                className="bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-2 rounded-lg transition"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg transition"
-              >
-                Salir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -127,6 +127,7 @@ model Message {
   sender          User     @relation("SenderMessages", fields: [senderId], references: [id], onDelete: Cascade)
   content         String   @db.Text
   isModeratorAlert Boolean @default(false)
+  isRead          Boolean  @default(false)
   createdAt       DateTime @default(now())
 
   @@index([conversationId])

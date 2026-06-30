@@ -308,9 +308,44 @@ export default function RegisterWizard() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Limitar tamaño: máx 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        setFieldErrors({ photoUrl: 'La foto no debe superar 5MB' });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setForm({ ...form, photoUrl: reader.result as string });
+        const img = new Image();
+        img.onload = () => {
+          // Comprimir imagen a máx 400x400 con calidad 80%
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > 400) {
+              height *= 400 / width;
+              width = 400;
+            }
+          } else {
+            if (height > 400) {
+              width *= 400 / height;
+              height = 400;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // Convertir a JPEG al 80% de calidad
+          const compressed = canvas.toDataURL('image/jpeg', 0.8);
+          setForm({ ...form, photoUrl: compressed });
+          setFieldErrors({});
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -328,6 +363,7 @@ export default function RegisterWizard() {
         phone: '', // TODO: agregar campo de teléfono
         address: form.address,
         zone: `${form.locality}, ${form.province}`,
+        photoUrl: form.photoUrl || null,
         role: form.role === 'domestic' ? 'DOMESTIC' : 'CLIENT',
         ...(form.role === 'domestic' && {
           personalTraits: form.personalTraits,

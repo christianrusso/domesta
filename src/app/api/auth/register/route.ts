@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       phone,
       address,
       zone,
+      photoUrl,
       role,
       // Domestic fields
       personalTraits,
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
         phone,
         address,
         zone,
+        photoUrl: photoUrl || null,
         role: role || 'CLIENT',
       },
     });

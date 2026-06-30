@@ -54,11 +54,14 @@ export default function Page() {
 }
 
 function DashboardView() {
+  const router = useRouter()
   const [allProfiles, setAllProfiles] = useState<any[]>([])
   const [profiles, setProfiles] = useState<any[]>([])
   const [recommendedProfiles, setRecommendedProfiles] = useState<any[]>([])
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -66,6 +69,34 @@ function DashboardView() {
 
     fetchData(token)
   }, [])
+
+  const handleAISearch = async () => {
+    if (!searchQuery.trim()) return
+
+    setIsSearching(true)
+    try {
+      const response = await fetch('/api/search/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: searchQuery.trim() }),
+      })
+
+      if (!response.ok) throw new Error('Error en la búsqueda')
+
+      const { filters } = await response.json()
+
+      // Guardar filtros en sessionStorage para que /search los use
+      sessionStorage.setItem('aiFilters', JSON.stringify(filters))
+
+      // Redirigir a /search con leyenda
+      router.push('/search?aiPowered=true')
+    } catch (error) {
+      console.error('Search error:', error)
+      alert('Error al procesar la búsqueda')
+    } finally {
+      setIsSearching(false)
+    }
+  }
 
   const fetchData = async (token: string) => {
     try {
@@ -150,12 +181,19 @@ function DashboardView() {
             <label className="block text-white/80 mb-4 text-lg">¿Qué servicio buscas?</label>
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Describe lo que necesitas..."
-              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-4"
+              disabled={isSearching}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-4 disabled:opacity-50"
             />
             <div className="flex gap-4">
-              <button className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg hover:shadow-purple-500/50 text-white font-semibold py-3 px-6 rounded-lg transition">
-                Buscar con IA
+              <button
+                onClick={handleAISearch}
+                disabled={isSearching}
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg hover:shadow-purple-500/50 text-white font-semibold py-3 px-6 rounded-lg transition disabled:opacity-50"
+              >
+                {isSearching ? 'Buscando...' : 'Buscar con IA'}
               </button>
               <Link
                 href="/search"

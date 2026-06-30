@@ -31,6 +31,12 @@ interface DomesticProfile {
   cookingType: string | null;
   cookingDetails: string | null;
   skills: Array<{ skillType: string }>;
+  availability: Array<{
+    id: string;
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+  }>;
   user: {
     name: string;
     email: string;
@@ -43,9 +49,9 @@ interface DomesticProfile {
 }
 
 export default function ProfileDetailPage() {
-  const params = useParams();
   const router = useRouter();
-  const profileId = params.id as string;
+  const params = useParams();
+  const profileId = (params?.id as string) || '';
 
   const [profile, setProfile] = useState<DomesticProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,6 +70,8 @@ export default function ProfileDetailPage() {
   }, []);
 
   useEffect(() => {
+    if (!profileId) return;
+
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/auth/login');
@@ -100,6 +108,11 @@ export default function ProfileDetailPage() {
   };
 
   const handleContact = async () => {
+    if (!profileId) {
+      alert('Cargando perfil... intenta de nuevo');
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/auth/login');
@@ -116,12 +129,16 @@ export default function ProfileDetailPage() {
         body: JSON.stringify({ domesticProfileId: profileId }),
       });
 
-      if (!res.ok) throw new Error('Error al crear conversación');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Error al crear conversación');
+      }
 
       const data = await res.json();
-      router.push(`/messages/${data.conversationId}`);
+      router.push(`/inbox?conversationId=${data.conversationId}`);
     } catch (error) {
-      alert('Error al contactar');
+      console.error('Contact error:', error);
+      alert(`Error al contactar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
   };
 
@@ -155,6 +172,19 @@ export default function ProfileDetailPage() {
   const isNanny = profile.skills.some((s) => s.skillType === 'NANNY');
   const isCooking = profile.skills.some((s) => s.skillType === 'COOKING');
   const isCleaning = profile.skills.some((s) => s.skillType === 'CLEANING');
+
+  const getDayName = (day: string): string => {
+    const days: Record<string, string> = {
+      'Mon': 'Lunes',
+      'Tue': 'Martes',
+      'Wed': 'Miércoles',
+      'Thu': 'Jueves',
+      'Fri': 'Viernes',
+      'Sat': 'Sábado',
+      'Sun': 'Domingo',
+    };
+    return days[day] || day;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br slate-950 py-8 sm:py-12">
@@ -359,6 +389,23 @@ export default function ProfileDetailPage() {
                 </div>
               )}
             </div>
+
+            {/* Horarios de Disponibilidad */}
+            {profile.availability && profile.availability.length > 0 && (
+              <div>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4">📅 Horarios de Disponibilidad</h2>
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4 sm:p-6">
+                  <div className="space-y-3">
+                    {profile.availability.map((avail) => (
+                      <div key={avail.id} className="flex items-center justify-between p-3 bg-white/10 border border-white/20 rounded-lg">
+                        <span className="font-semibold text-white">{getDayName(avail.dayOfWeek)}</span>
+                        <span className="text-white/70 text-sm">{avail.startTime} - {avail.endTime}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Información Adicional */}
             <div>

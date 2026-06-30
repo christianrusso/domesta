@@ -40,6 +40,16 @@ export async function GET(request: NextRequest) {
             skillType: true,
           },
         },
+        availability: {
+          select: {
+            dayOfWeek: true,
+            startTime: true,
+            endTime: true,
+          },
+          orderBy: {
+            dayOfWeek: 'asc',
+          },
+        },
       },
     });
 

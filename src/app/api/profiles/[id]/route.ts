@@ -41,6 +41,17 @@ export async function GET(
             skillType: true,
           },
         },
+        availability: {
+          select: {
+            id: true,
+            dayOfWeek: true,
+            startTime: true,
+            endTime: true,
+          },
+          orderBy: {
+            dayOfWeek: 'asc',
+          },
+        },
       },
     });
 

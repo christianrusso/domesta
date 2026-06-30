@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Search, ShieldCheck, Star, Sparkles } from "lucide-react"
@@ -13,7 +14,39 @@ const trustBadges = [
 ]
 
 export function Hero() {
+  const router = useRouter()
   const [query, setQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!query.trim()) return
+
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/search/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query.trim() }),
+      })
+
+      if (!response.ok) throw new Error('Error en la búsqueda')
+
+      const { filters } = await response.json()
+
+      // Guardar filtros en sessionStorage para que /search los use
+      sessionStorage.setItem('aiFilters', JSON.stringify(filters))
+
+      // Redirigir a /search con leyenda
+      router.push('/search?aiPowered=true')
+    } catch (error) {
+      console.error('Search error:', error)
+      alert('Error al procesar la búsqueda')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <section className="relative overflow-hidden">
@@ -34,7 +67,7 @@ export function Hero() {
           </p>
 
           <form
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSearch}
             className="mt-8 flex flex-col gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm sm:flex-row sm:items-center sm:rounded-full sm:p-2"
           >
             <div className="flex flex-1 items-center gap-2 px-2">
@@ -49,15 +82,17 @@ export function Hero() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Describí lo que necesitás..."
                 className="w-full bg-transparent py-2 text-base text-foreground outline-none placeholder:text-muted-foreground"
+                disabled={isLoading}
               />
             </div>
             <Button
               type="submit"
               size="lg"
-              className="rounded-full bg-primary px-6 text-primary-foreground hover:bg-primary/90"
+              disabled={isLoading}
+              className="rounded-full bg-primary px-6 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               <Search className="mr-2 h-4 w-4" aria-hidden="true" />
-              Buscar
+              {isLoading ? 'Buscando...' : 'Buscar'}
             </Button>
           </form>
 

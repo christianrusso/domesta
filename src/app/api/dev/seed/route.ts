@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAIFaceUrl } from '@/lib/aifaces';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 
-const getGravatarUrl = (email: string) => {
-  const hash = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
-  return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
-};
+let userIndex = 0;
 
 const seedData = [
   {
     name: 'María González',
     email: 'maria.gonzalez@test.com',
+    phone: '+54 11 2234 5678',
     description: 'Tengo 8 años de experiencia en limpieza. Soy responsable, puntual y muy prolija.',
     hourlyRate: 2500,
     skills: ['CLEANING'],
@@ -23,6 +21,7 @@ const seedData = [
   {
     name: 'Ana Martínez',
     email: 'ana.martinez@test.com',
+    phone: '+54 11 3456 7890',
     description: 'Niñera con 10 años de experiencia. Especializada en niños de 0-5 años. Muy atenta y paciente.',
     hourlyRate: 3000,
     skills: ['NANNY'],
@@ -34,6 +33,7 @@ const seedData = [
   {
     name: 'Carmen López',
     email: 'carmen.lopez@test.com',
+    phone: '+54 11 1567 8901',
     description: 'Chef con 12 años de experiencia. Cocina casera y repostería. Dietas especiales.',
     hourlyRate: 3500,
     skills: ['COOKING'],
@@ -46,6 +46,7 @@ const seedData = [
   {
     name: 'Rosa Fernández',
     email: 'rosa.fernandez@test.com',
+    phone: '+54 11 4567 8901',
     description: 'Multioficio: limpieza, cuidado de niños y cocina básica. 15 años en el rubro.',
     hourlyRate: 2800,
     skills: ['CLEANING', 'NANNY', 'COOKING'],
@@ -57,6 +58,7 @@ const seedData = [
   {
     name: 'Lucia Rodríguez',
     email: 'lucia.rodriguez@test.com',
+    phone: '+54 11 5678 9012',
     description: 'Especialista en limpieza profunda y mantenimiento. Experiencia con casas grandes.',
     hourlyRate: 3200,
     skills: ['CLEANING'],
@@ -68,6 +70,7 @@ const seedData = [
   {
     name: 'Teresa Gómez',
     email: 'teresa.gomez@test.com',
+    phone: '+54 11 6789 0123',
     description: 'Niñera y cuidadora. Experiencia con niños especiales. Muy comprometida.',
     hourlyRate: 3500,
     skills: ['NANNY'],
@@ -80,6 +83,7 @@ const seedData = [
   {
     name: 'Gabriela Pérez',
     email: 'gabriela.perez@test.com',
+    phone: '+54 11 7890 1234',
     description: 'Cocinera especializada en comida saludable y vegetariana. Cursos de nutrición.',
     hourlyRate: 4000,
     skills: ['COOKING'],
@@ -91,6 +95,7 @@ const seedData = [
   {
     name: 'Silvia Torres',
     email: 'silvia.torres@test.com',
+    phone: '+54 11 8901 2345',
     description: 'Limpieza y organización. Especialista en feng shui y organización de espacios.',
     hourlyRate: 3000,
     skills: ['CLEANING'],
@@ -102,6 +107,7 @@ const seedData = [
   {
     name: 'Beatriz Sánchez',
     email: 'beatriz.sanchez@test.com',
+    phone: '+54 11 9012 3456',
     description: 'Niñera, limpieza y cocina. Persona de confianza con muchos años de experiencia.',
     hourlyRate: 2900,
     skills: ['NANNY', 'CLEANING', 'COOKING'],
@@ -113,6 +119,7 @@ const seedData = [
   {
     name: 'Norma Díaz',
     email: 'norma.diaz@test.com',
+    phone: '+54 11 2123 4567',
     description: 'Limpieza profunda y pasante. 20 años en limpieza de hogares de clase alta.',
     hourlyRate: 3300,
     skills: ['CLEANING'],
@@ -155,8 +162,9 @@ export async function GET(request: NextRequest) {
           email: employee.email,
           password: hashedPassword,
           name: employee.name,
+          phone: (employee as any).phone,
           zone: employee.zone,
-          photoUrl: getGravatarUrl(employee.email),
+          photoUrl: getAIFaceUrl(userIndex++),
           role: 'DOMESTIC',
           isApproved: true, // Auto-approve para testing
         },
