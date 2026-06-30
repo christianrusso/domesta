@@ -33,6 +33,12 @@ export default function SearchPage() {
   const [minRate, setMinRate] = useState('');
   const [maxRate, setMaxRate] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [hasLicense, setHasLicense] = useState(false);
+  const [petFriendly, setPetFriendly] = useState(false);
+  const [ownCar, setOwnCar] = useState(false);
+  const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc'>('name');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const skillOptions = [
     { value: 'NANNY', label: 'Niñera' },
@@ -103,7 +109,29 @@ export default function SearchPage() {
       filtered = filtered.filter((p) => (p.hourlyRate || 0) <= parseInt(maxRate));
     }
 
+    if (hasLicense) {
+      filtered = filtered.filter((p) => p.hasLicense);
+    }
+
+    if (petFriendly) {
+      filtered = filtered.filter((p) => p.petFriendly);
+    }
+
+    if (ownCar) {
+      filtered = filtered.filter((p) => p.ownCar);
+    }
+
+    // Ordenamiento
+    if (sortBy === 'price-asc') {
+      filtered.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
+    } else if (sortBy === 'price-desc') {
+      filtered.sort((a, b) => (b.hourlyRate || 0) - (a.hourlyRate || 0));
+    } else {
+      filtered.sort((a, b) => a.user.name.localeCompare(b.user.name));
+    }
+
     setFilteredProfiles(filtered);
+    setCurrentPage(1);
   };
 
   const resetFilters = () => {
@@ -112,6 +140,11 @@ export default function SearchPage() {
     setMinRate('');
     setMaxRate('');
     setSearchText('');
+    setHasLicense(false);
+    setPetFriendly(false);
+    setOwnCar(false);
+    setSortBy('name');
+    setCurrentPage(1);
     setFilteredProfiles(allProfiles);
   };
 
@@ -221,6 +254,54 @@ export default function SearchPage() {
                 </div>
               </div>
 
+              {/* Características */}
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-white font-semibold mb-2 text-sm">Características</label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hasLicense}
+                      onChange={(e) => setHasLicense(e.target.checked)}
+                      className="w-4 h-4 rounded accent-purple-600"
+                    />
+                    <span className="text-white text-sm">Con licencia</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={petFriendly}
+                      onChange={(e) => setPetFriendly(e.target.checked)}
+                      className="w-4 h-4 rounded accent-purple-600"
+                    />
+                    <span className="text-white text-sm">Amigable con mascotas</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={ownCar}
+                      onChange={(e) => setOwnCar(e.target.checked)}
+                      className="w-4 h-4 rounded accent-purple-600"
+                    />
+                    <span className="text-white text-sm">Tiene auto</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Ordenamiento */}
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-white font-semibold mb-2 text-sm">Ordenar por</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="name">Nombre (A-Z)</option>
+                  <option value="price-asc">Precio menor a mayor</option>
+                  <option value="price-desc">Precio mayor a menor</option>
+                </select>
+              </div>
+
               {/* Botones */}
               <div className="flex flex-col gap-2 sm:gap-3">
                 <button
@@ -249,7 +330,8 @@ export default function SearchPage() {
                   <p className="text-white/70 text-lg">No se encontraron niñeras con estos criterios</p>
                 </div>
               ) : (
-                filteredProfiles.map((profile) => (
+                <>
+                  {filteredProfiles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((profile) => (
                   <Link
                     key={profile.id}
                     href={`/profile/${profile.id}`}
@@ -302,7 +384,33 @@ export default function SearchPage() {
                       </button>
                     </div>
                   </Link>
-                ))
+                  ))}
+
+                  {/* Paginación */}
+                  {filteredProfiles.length > itemsPerPage && (
+                    <div className="flex justify-center items-center gap-4 mt-8">
+                      <button
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 bg-white/10 border border-white/20 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition"
+                      >
+                        ← Anterior
+                      </button>
+                      <span className="text-white text-sm">
+                        Página {currentPage} de {Math.ceil(filteredProfiles.length / itemsPerPage)}
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage(Math.min(Math.ceil(filteredProfiles.length / itemsPerPage), currentPage + 1))}
+                        disabled={currentPage === Math.ceil(filteredProfiles.length / itemsPerPage)}
+                        className="px-4 py-2 bg-white/10 border border-white/20 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition"
+                      >
+                        Siguiente →
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-white/60 mt-4">Mostrando {Math.min(itemsPerPage, filteredProfiles.length - (currentPage - 1) * itemsPerPage)} de {filteredProfiles.length} resultados</p>
+                </>
               )}
             </div>
           </div>
