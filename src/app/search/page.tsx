@@ -261,45 +261,43 @@ export default function SearchPage() {
               {/* Tarifa */}
               <div className="mb-4 sm:mb-6">
                 <label className="block text-white font-semibold mb-2 text-sm">Tarifa ($/h)</label>
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <label className="text-white/60 text-xs mb-1 block">Desde</label>
-                      <input
-                        type="number"
-                        value={minRate}
-                        onChange={(e) => setMinRate(e.target.value)}
-                        placeholder="0"
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-white/60 text-xs mb-1 block">Hasta</label>
-                      <input
-                        type="number"
-                        value={maxRate}
-                        onChange={(e) => setMaxRate(e.target.value)}
-                        placeholder="10000"
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-                      />
-                    </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-white/60 text-xs block mb-2">Mínimo: ${minRate || '0'}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      step="100"
+                      value={minRate || '0'}
+                      onChange={(e) => setMinRate(e.target.value)}
+                      className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                      style={{
+                        background: `linear-gradient(to right, rgb(147, 51, 234) 0%, rgb(147, 51, 234) ${((parseInt(minRate) || 0) / 10000) * 100}%, rgba(255,255,255,0.2) ${((parseInt(minRate) || 0) / 10000) * 100}%, rgba(255,255,255,0.2) 100%)`
+                      }}
+                    />
                   </div>
-                  <div className="bg-white/10 rounded-lg p-3">
-                    <div className="h-2 bg-white/20 rounded-full relative">
-                      <div
-                        className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full"
-                        style={{
-                          width: `${minRate ? Math.min(100, (parseInt(minRate) / 10000) * 100) : 0}%`
-                        }}
-                      ></div>
-                    </div>
-                    {minRate || maxRate ? (
-                      <p className="text-purple-300 text-sm mt-2 text-center font-semibold">
-                        ${minRate || '0'} - ${maxRate || '∞'}
-                      </p>
-                    ) : (
-                      <p className="text-white/60 text-xs mt-2 text-center">Cualquier precio</p>
-                    )}
+
+                  <div>
+                    <label className="text-white/60 text-xs block mb-2">Máximo: ${maxRate || '∞'}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      step="100"
+                      value={maxRate || '10000'}
+                      onChange={(e) => setMaxRate(e.target.value)}
+                      className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                      style={{
+                        background: `linear-gradient(to right, rgb(147, 51, 234) 0%, rgb(147, 51, 234) ${((parseInt(maxRate) || 10000) / 10000) * 100}%, rgba(255,255,255,0.2) ${((parseInt(maxRate) || 10000) / 10000) * 100}%, rgba(255,255,255,0.2) 100%)`
+                      }}
+                    />
+                  </div>
+
+                  <div className="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border border-purple-500/50 rounded-lg p-3">
+                    <p className="text-purple-300 text-sm text-center font-semibold">
+                      ${minRate || '0'} - ${maxRate || '∞'} por hora
+                    </p>
                   </div>
                 </div>
               </div>
