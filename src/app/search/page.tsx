@@ -101,8 +101,10 @@ export default function SearchPage() {
 
     if (selectedProvince) {
       filtered = filtered.filter((p) => {
-        const zoneParts = p.user.zone?.split(',') || [];
-        return zoneParts.length === 2 && zoneParts[1].trim() === selectedProvince;
+        if (!p.user.zone) return false;
+        // Buscar si la provincia está en la zona (puede ser después de una coma)
+        const zoneUpper = p.user.zone.toUpperCase();
+        return zoneUpper.includes(selectedProvince.toUpperCase());
       });
     }
 
