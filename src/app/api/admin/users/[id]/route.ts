@@ -4,9 +4,11 @@ import jwt from 'jsonwebtoken';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -26,7 +28,7 @@ export async function PATCH(
 
     // Actualizar usuario
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(isSuspended !== undefined && { isSuspended }),
         ...(isApproved !== undefined && { isApproved }),
@@ -35,6 +37,10 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, user: updatedUser });
   } catch (error) {
-    return NextResponse.json({ error: 'Error updating user' }, { status: 500 });
+    console.error('Admin update error:', error);
+    return NextResponse.json({
+      error: 'Error updating user',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
