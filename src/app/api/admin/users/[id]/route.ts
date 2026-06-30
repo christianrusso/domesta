@@ -35,6 +35,19 @@ export async function PATCH(
       },
     });
 
+    // Si se actualiza isApproved, también actualizar DomesticProfile
+    if (isApproved !== undefined) {
+      const domesticProfile = await prisma.domesticProfile.findUnique({
+        where: { userId: id },
+      });
+      if (domesticProfile) {
+        await prisma.domesticProfile.update({
+          where: { id: domesticProfile.id },
+          data: { isApproved },
+        });
+      }
+    }
+
     return NextResponse.json({ success: true, user: updatedUser });
   } catch (error) {
     console.error('Admin update error:', error);
