@@ -33,9 +33,14 @@ export default function SearchPage() {
   const [minRate, setMinRate] = useState('');
   const [maxRate, setMaxRate] = useState('');
   const [searchText, setSearchText] = useState('');
+  // Filtros adicionales
   const [hasLicense, setHasLicense] = useState(false);
   const [petFriendly, setPetFriendly] = useState(false);
   const [ownCar, setOwnCar] = useState(false);
+  const [doesSmoke, setDoesSmoke] = useState(false);
+  const [vaccinated, setVaccinated] = useState(false);
+  const [cprCertified, setCprCertified] = useState(false);
+  const [isNegotiable, setIsNegotiable] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc'>('name');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -121,6 +126,22 @@ export default function SearchPage() {
       filtered = filtered.filter((p) => p.ownCar);
     }
 
+    if (doesSmoke) {
+      filtered = filtered.filter((p) => !p.doesSmoke);
+    }
+
+    if (vaccinated) {
+      filtered = filtered.filter((p) => p.vaccinated);
+    }
+
+    if (cprCertified) {
+      filtered = filtered.filter((p) => p.cprCertified);
+    }
+
+    if (isNegotiable) {
+      filtered = filtered.filter((p) => p.isNegotiable);
+    }
+
     // Ordenamiento
     if (sortBy === 'price-asc') {
       filtered.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
@@ -143,6 +164,10 @@ export default function SearchPage() {
     setHasLicense(false);
     setPetFriendly(false);
     setOwnCar(false);
+    setDoesSmoke(false);
+    setVaccinated(false);
+    setCprCertified(false);
+    setIsNegotiable(false);
     setSortBy('name');
     setCurrentPage(1);
     setFilteredProfiles(allProfiles);
@@ -284,6 +309,42 @@ export default function SearchPage() {
                       className="w-4 h-4 rounded accent-purple-600"
                     />
                     <span className="text-white text-sm">Tiene auto</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!doesSmoke}
+                      onChange={(e) => setDoesSmoke(!e.target.checked)}
+                      className="w-4 h-4 rounded accent-purple-600"
+                    />
+                    <span className="text-white text-sm">No fuma</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={vaccinated}
+                      onChange={(e) => setVaccinated(e.target.checked)}
+                      className="w-4 h-4 rounded accent-purple-600"
+                    />
+                    <span className="text-white text-sm">Vacunada</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cprCertified}
+                      onChange={(e) => setCprCertified(e.target.checked)}
+                      className="w-4 h-4 rounded accent-purple-600"
+                    />
+                    <span className="text-white text-sm">CPR Certificada</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isNegotiable}
+                      onChange={(e) => setIsNegotiable(e.target.checked)}
+                      className="w-4 h-4 rounded accent-purple-600"
+                    />
+                    <span className="text-white text-sm">Precio negociable</span>
                   </label>
                 </div>
               </div>
