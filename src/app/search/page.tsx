@@ -162,34 +162,6 @@ export default function SearchPage() {
       filtered = filtered.filter((p) => (p.hourlyRate || 0) <= parseInt(maxRate));
     }
 
-    if (hasLicense) {
-      filtered = filtered.filter((p) => p.hasLicense);
-    }
-
-    if (petFriendly) {
-      filtered = filtered.filter((p) => p.petFriendly);
-    }
-
-    if (ownCar) {
-      filtered = filtered.filter((p) => p.ownCar);
-    }
-
-    if (doesSmoke) {
-      filtered = filtered.filter((p) => !p.doesSmoke);
-    }
-
-    if (vaccinated) {
-      filtered = filtered.filter((p) => p.vaccinated);
-    }
-
-    if (cprCertified) {
-      filtered = filtered.filter((p) => p.cprCertified);
-    }
-
-    if (isNegotiable) {
-      filtered = filtered.filter((p) => p.isNegotiable);
-    }
-
     if (selectedDays.length > 0) {
       filtered = filtered.filter((p) => {
         if (!p.availability || p.availability.length === 0) return false;
