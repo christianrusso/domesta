@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogoWithText } from '@/components/Logo';
+import { formatZone } from '@/lib/utils';
 
 interface User {
   id: string;
@@ -67,30 +68,48 @@ export default function AdminPanel() {
 
   const handleToggleSuspend = async (userId: string, currentState: boolean) => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      alert('No hay token disponible');
+      return;
+    }
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ isSuspended: !currentState }),
       });
-      if (res.ok) setUsers(users.map((u) => u.id === userId ? { ...u, isSuspended: !currentState } : u));
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(users.map((u) => u.id === userId ? { ...u, isSuspended: !currentState } : u));
+      } else {
+        alert(data.error || 'Error al actualizar usuario');
+      }
     } catch (err) {
+      console.error('Error:', err);
       alert('Error al contactar el servidor');
     }
   };
 
   const handleToggleApprove = async (userId: string, currentState: boolean) => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      alert('No hay token disponible');
+      return;
+    }
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ isApproved: !currentState }),
       });
-      if (res.ok) setUsers(users.map((u) => u.id === userId ? { ...u, isApproved: !currentState } : u));
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(users.map((u) => u.id === userId ? { ...u, isApproved: !currentState } : u));
+      } else {
+        alert(data.error || 'Error al actualizar usuario');
+      }
     } catch (err) {
+      console.error('Error:', err);
       alert('Error al contactar el servidor');
     }
   };
@@ -164,7 +183,7 @@ export default function AdminPanel() {
                     <td className="px-6 py-4 text-white font-medium">{user.name}</td>
                     <td className="px-6 py-4 text-white/70 text-xs">{user.email}</td>
                     <td className="px-6 py-4"><span className={`px-3 py-1 rounded-full text-xs font-semibold ${user.role === 'CLIENT' ? 'bg-blue-600/50 text-blue-100' : user.role === 'DOMESTIC' ? 'bg-purple-600/50 text-purple-100' : 'bg-yellow-600/50 text-yellow-100'}`}>{user.role === 'CLIENT' ? 'Cliente' : user.role === 'DOMESTIC' ? 'Niñera' : 'Admin'}</span></td>
-                    <td className="px-6 py-4 text-white/70 text-sm">{user.zone || '-'}</td>
+                    <td className="px-6 py-4 text-white/70 text-sm">{formatZone(user.zone)}</td>
                     <td className="px-6 py-4"><span className={`px-3 py-1 rounded-full text-xs font-semibold ${user.isSuspended ? 'bg-red-600/50 text-red-100' : 'bg-green-600/50 text-green-100'}`}>{user.isSuspended ? 'Suspendido' : 'Activo'}</span></td>
                     <td className="px-6 py-4 text-white/70 text-xs">{new Date(user.createdAt).toLocaleDateString('es-AR')}</td>
                     <td className="px-6 py-4"><div className="flex gap-2">
